@@ -1,22 +1,47 @@
 from utils import *
 import re
 
-
 class Operand : 
-    def __init__(self, name, id, url, size, operands) :
+    def __init__(self, name, type, role, is_optional, is_modifiable, can_be_dst, href_id, href_url, size, op) :
         self.name = name
-        self.id = id
-        self.url = url
+        self.type = type
+        self.role = role
+        self.is_optional = is_optional
+        self.is_modifiable = is_modifiable
+        self.can_be_dst = can_be_dst
+        self.id = href_id
+        self.url = href_url
         self.size = size
-        self.operands = operands
+        self.operands = op
     
-    def get_name(self) :
+    def get_name(self):
         return self.name
 
-    def get_size(self) :
+    def get_type(self):
+        return self.type
+
+    def get_role(self):
+        return self.role
+
+    def get_is_optional(self):
+        return self.is_optional
+
+    def get_is_modifiable(self):
+        return self.is_modifiable
+
+    def get_can_be_dst(self):
+        return self.can_be_dst
+
+    def get_id(self):
+        return self.id
+
+    def get_url(self):
+        return self.url
+
+    def get_size(self):
         return self.size
-    
-    def get_operands(self) :
+
+    def get_operands(self):
         return self.operands
 
 
@@ -112,9 +137,10 @@ class DoubleType :
         return self.type_principal.get_encoding_string() + "" + self.type_suffix.get_encoding_string()[32:]
 
 class Instruction :
-    def __init__(self, instruction, type, operand_list, modifier_list, opcode='N/A', encoding_string='N/A', note='') :
+    def __init__(self, instruction, type, operand_type, operand_list, modifier_list, opcode='N/A', encoding_string='N/A', note='') :
         self.instruction = instruction
         self.type_str = type
+        self.operand_type = operand_type
         self.opcode = opcode
         self.operand_list = operand_list
         self.modifier_list = modifier_list
@@ -139,6 +165,9 @@ class Instruction :
     def get_type_str(self) :
         return self.type_str
 
+    def get_operand_type(self) :
+        return self.operand_type
+    
     def get_opcode(self) :
         return self.opcode
     
@@ -146,12 +175,7 @@ class Instruction :
         return self.encoding_string
 
     def get_operand_list(self) :
-        operand_list = []
-        for e in self.operand_list :
-            operand_list.append(e.get_name())
-            operand_list.append(e.get_size())
-            operand_list.append(e.get_operands())
-        return operand_list
+        return self.operand_list
     
     
     def get_operand_name_list(self) :

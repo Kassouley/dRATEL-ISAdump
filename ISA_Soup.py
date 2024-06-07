@@ -37,7 +37,31 @@ class ISA_SOUP :
             for instruction_type in self.get_instruction_types() :
                 section = section_instructions.find('section', id=instruction_type.lower().replace(" ","-")).find('pre', class_='literal-block')
                 if section:
-                    section_dic[instruction_type] = section.prettify().split('\n')[2:]
+                    table = section.get_text().split('\n')
+                    table_soup = section.prettify().split('\n')[2:]
+                    header_line = table.pop(0)
+                    column_starts = [header_line.find(col) for col in header_line.split()]
+                    section_table = []
+                    for line, line_soup in zip(table[1:], table_soup) :
+                        if not line.strip():
+                            continue
+                        elements = [line[start:end].strip() for start, end in zip(column_starts, column_starts[1:]+[None])]
+                        instruction = [elements.pop(0)]
+                        modifiers = [modifier+":MOD" for modifier in elements.pop().split()]
+                        operands = []
+                        for index, e in enumerate(elements) :
+                            if e.strip() :
+                                operand = e.replace(',','')
+                                operand_only = operand.split(':')[0].strip()
+                                tag = BeautifulSoup(line_soup, 'html.parser').find('a', class_='reference internal', text=operand_only)
+                                if tag:
+                                    href = tag.get('href')
+                                operand = operand + ":" + href + ":" + ''.join([c for c in header_line.split()[index+1] if not c.isdigit()])
+                                operands.append(operand)
+                        instruction.extend(operands)
+                        instruction.extend(modifiers)
+                        section_table.append(instruction)
+                    section_dic[instruction_type] = section_table
                 else:
                     print(f"La section avec l'ID {instruction_type.lower()} n'a pas été trouvée dans la section 'instructions'.")
                     sys.exit()

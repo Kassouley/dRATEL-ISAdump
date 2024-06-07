@@ -6,6 +6,30 @@ from Instruction import Instruction
 from enumeration import *
 import threading
 
+TYPE_SUFFIX = ['b512', 'b256', 'b128', 'b64', 'b32', 'b16', 'b8', 
+               'u64', 'u32', 'u16', 'u8', 'u4',
+               'i64', 'i32', 'i16', 'i8', 'i4',
+               'f64', 'f32', 'f16', 'b16',
+               'bf16'
+]
+SUFFIX_AUX = ['x2', 'x4', 'x8', 'x16', 'x32']
+
+TYPE_SUFFIX = TYPE_SUFFIX + [base + suffix for base in TYPE_SUFFIX for suffix in SUFFIX_AUX] + ['fx']
+
+SIZE_SUFFIX = [
+    "x2", "x3", "x4", "x8", "x16",
+    "x", "xy", "xyz", "xyzw",
+    "d16_x", "d16_xy", "d16_xyz", "d16_xyzw",
+    "d16_format_x", "d16_format_xy", "d16_format_xyz", "d16_format_xyzw"
+]
+SIZE_SUFFIX_CORRESPONDING= [
+    "b64", "b96", "b128", "b256", "b512",
+    "b32", "b64", "b96", "b128",
+    "b16", "b16x2", "b16x3", "b16x4",
+    "b16", "b16x2", "b16x3", "b16x4"
+]
+ENCODING_SUFFIX = ['e32', 'e64', 'dpp', 'sdwa', 'e64_dpp']
+
 class InstructionSet :
     def __init__(self, isa_name, isa_llvm_urls, isa_pdf_path, pdf_pages_range, pdf_is_double_optable):
         self.isa_name = isa_name
@@ -38,48 +62,122 @@ class InstructionSet :
         return informations
 
     def create_instructions_dic_aux(self, instruction_line, instruction_type) :
-        instruction_soup =  BeautifulSoup(instruction_line, 'html.parser')
-        instruction_string = instruction_soup.get_text()
-        instruction_split = instruction_string.split()
-        instruction_name = instruction_split.pop(0)
+        def parse_instruction_suffix(input_str):
+            base_str = input_str
+            type_suffix_src = 'b32'
+            type_suffix_dst = None
+            encoding_suffix = None
+            for enc_suffix in ENCODING_SUFFIX:
+                if input_str.endswith(enc_suffix):
+                    encoding_suffix = enc_suffix
+                    base_str = input_str[:-len(enc_suffix)-1]
+                    break
+            if base_str.endswith('_'):
+                base_str = base_str[:-1]
+                
+            for type_suf in SIZE_SUFFIX :
+                if base_str.endswith(type_suf):
+                    type_suffix_src = SIZE_SUFFIX_CORRESPONDING[SIZE_SUFFIX.index(type_suf)]
+                    base_str = base_str[:-len(type_suf)]
+                    break
+            if base_str.endswith('_'):
+                base_str = base_str[:-1]
+
+            for type_suf in TYPE_SUFFIX:
+                if base_str.endswith(type_suf):
+                    type_suffix_src = type_suf
+                    base_str = base_str[:-len(type_suf)]
+                    break
+            if base_str.endswith('_'):
+                base_str = base_str[:-1]
+
+            for type_suf in TYPE_SUFFIX :
+                if base_str.endswith(type_suf):
+                    type_suffix_dst = type_suf
+                    base_str = base_str[:-len(type_suf)]
+                    break
+            if base_str.endswith('_'):
+                base_str = base_str[:-1]
+
+            return base_str, type_suffix_dst, type_suffix_src, encoding_suffix
         
+        instruction_name = instruction_line.pop(0)
+        instruction_name_wo_suffix, type_suffix_dst, type_suffix_src, instruction_encoding_suffix = parse_instruction_suffix(instruction_name)
+        if type_suffix_dst == None :
+            type_suffix_dst = type_suffix_src
+
         # OPERANDS & MODFIERS CREATION
         instruction_modifier_list = []
         instruction_operand_list = []
-        arguments_list = []
-        if len(instruction_split) !=0 :
-            arguments_list = " ".join(instruction_split)
-            arguments_list = arguments_list.replace(',','')
-            arguments_list = arguments_list.split()
 
-        for argument in arguments_list :
-            argument_only = argument.split(':')[0].strip()
-            tag = instruction_soup.find('a', class_='reference internal', text=argument_only)
-            if tag:
-                href = tag.get('href')
+        for argument in instruction_line :
+            argument_split = argument.split(':')
+            if argument_split[-1].strip() == 'MOD' :
+                instruction_modifier_list.append(argument_split[0])
+            else :
+                operand_name = argument_split.pop(0)
+                operand_role = argument_split.pop()
+                operand_type = type_suffix_src
+                if operand_role == 'SRC' :
+                    operand_type = type_suffix_src
+                elif operand_role == 'DST' :
+                    operand_type = type_suffix_dst    
+                operand_href = argument_split.pop()
+                operand_is_optional = False
+                operand_is_modifiable = False
+                operand_can_be_dst = False
+                while argument_split :
+                    e = argument_split.pop()
+                    if e == 'opt' :
+                        operand_is_optional = True
+                    elif e == 'm' :
+                        operand_is_modifiable = True
+                    elif e == 'dst' :
+                        operand_can_be_dst = True
+                    elif e in TYPE_SUFFIX :
+                        operand_type=e
+                    else :
+                        print(f"Operand information '{e}' not known for '{operand_name}'")
 
-                if re.search('AMDGPUModifierSyntax', href) :
-                    instruction_modifier_list.append(argument)
-                else :
-                    if href not in self.href_save_dic :
-                        tmp = self.get_operand_info(href)
-                    with self.href_save_dic_lock :
-                        if href not in self.href_save_dic :
-                            self.href_save_dic[href] = tmp
-                    # with self.href_save_dic_lock :
-                    #     if href not in self.href_save_dic :
-                    #         self.href_save_dic[href] = self.get_operand_info(href)
 
-                    href_id = href   
-                    match = re.search(r'^(.*?)\.html', href)
-                    if match:
-                        href_id = match.group(1)
+                if operand_href not in self.href_save_dic :
+                    tmp = self.get_operand_info(operand_href)
+                # with self.href_save_dic_lock :
+                if operand_href not in self.href_save_dic :
+                    self.href_save_dic[operand_href] = tmp
+                # with self.href_save_dic_lock :
+                #     if href not in self.href_save_dic :
+                #         self.href_save_dic[href] = self.get_operand_info(href)
 
-                    instruction_operand_list.append(Operand(argument, href_id, self.href_save_dic[href]['url'], self.href_save_dic[href]['size'], self.href_save_dic[href]['op']))
-        
+                href_id = operand_href   
+                match = re.search(r'^(.*?)\.html', operand_href)
+                if match:
+                    href_id = match.group(1)
+
+                instruction_operand_list.append(
+                    Operand(
+                        name=operand_name, 
+                        type=operand_type,
+                        role=operand_role,
+                        is_optional=operand_is_optional,
+                        is_modifiable=operand_is_modifiable,
+                        can_be_dst=operand_can_be_dst,
+                        href_id=href_id, 
+                        href_url=self.href_save_dic[operand_href]['url'], 
+                        size=self.href_save_dic[operand_href]['size'], 
+                        op=self.href_save_dic[operand_href]['op']
+                    )
+                )
+
+        if not instruction_operand_list :
+            instruction_operand_type = "-"
+        else :
+            instruction_operand_type = type_suffix_src
+
         # INSTRUCTION CREATION
         instruction = Instruction(instruction=instruction_name.upper(), 
                                   type=instruction_type.upper(), 
+                                  operand_type=instruction_operand_type,
                                   operand_list=instruction_operand_list, 
                                   modifier_list=instruction_modifier_list) 
         
@@ -99,10 +197,10 @@ class InstructionSet :
             instruction.set_note(f"No opcode found. Instruction exists in LLVM documentation ({self.isa_llvm_urls}) but not in {self.isa_name} documentation")
 
         # INSTRUCTION ATOMIC ADD TO DIC
-        with self.instructions_dic_lock :
-            if instruction.get_type_str() not in self.instructions_dic :
-                self.instructions_dic[instruction.get_type_str()] = []
-            self.instructions_dic[instruction.get_type_str()].append(instruction)
+        # with self.instructions_dic_lock :
+        if instruction.get_type_str() not in self.instructions_dic :
+            self.instructions_dic[instruction.get_type_str()] = []
+        self.instructions_dic[instruction.get_type_str()].append(instruction)
             
 
     def create_instructions_dic(self) :
@@ -110,14 +208,13 @@ class InstructionSet :
         threads = []
         for instruction_type, section_list in section_dic.items() :
             for instruction_line in section_list :
-                if not instruction_line.strip():
-                    continue 
-                t = threading.Thread(target=self.create_instructions_dic_aux, args=(instruction_line, instruction_type,))
-                threads.append(t)
-                t.start()
+                self.create_instructions_dic_aux(instruction_line, instruction_type)
+        #         t = threading.Thread(target=self.create_instructions_dic_aux, args=(instruction_line, instruction_type,))
+        #         threads.append(t)
+        #         t.start()
 
-        for t in threads:
-            t.join()
+        # for t in threads:
+        #     t.join()
 
         self.add_no_match_instructions()
 
@@ -139,6 +236,7 @@ class InstructionSet :
                 print(f"No match found for {pdf_instruction_name} ({pdf_instruction[ISA_Pdf.OPCODE.value]}/{pdf_instruction[ISA_Pdf.TYPE.value]})")
                 new_inst = Instruction(
                     instruction=pdf_instruction[ISA_Pdf.INSTRUCTIONS.value],
+                    operand_type=None,
                     opcode=pdf_instruction[ISA_Pdf.OPCODE.value],
                     type=pdf_instruction[ISA_Pdf.TYPE.value],
                     operand_list=[],
