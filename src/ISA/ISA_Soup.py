@@ -1,7 +1,7 @@
 from src.utils.utils import *
 import sys
 from src.utils.enumeration import *
-from Instruction import *
+from src.InstructionData.Instruction import Instruction
 
 class ISA_Soup:
     def __init__(self, isa_llvm_urls: list[str] | str) -> None:
@@ -80,8 +80,10 @@ class ISA_Soup:
                 
                 elements = [line[start:end].strip() for start, end in zip(column_starts, column_starts[1:] + [None])]
                 instruction = [elements.pop(0)]
-                modifiers = [f"{modifier}:MOD" for modifier in elements.pop().split()]
                 operands = []
+                modifiers = []
+                if 'MODIFIERS' in header_line :
+                    modifiers = [f"{modifier}:MOD" for modifier in elements.pop().split()]
                 
                 for index, e in enumerate(elements):
                     if e.strip():

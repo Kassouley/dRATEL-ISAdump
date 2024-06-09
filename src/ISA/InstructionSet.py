@@ -230,7 +230,7 @@ class InstructionSet :
                 self.instructions_dict[pdf_instruction_details[ISA_Pdf.FORMAT.value]].append(new_instruction)
 
     def to_csv(self, csv_path: str) -> None:
-        header = [["TYPE","ENCODING","OPCODE","INSTRUCTIONS","OPERAND0","OPERAND1","OPERAND2","OPERAND3","OPERAND4","MODIFIER0","MODIFIER1","MODIFIER2","MODIFIER3","MODIFIER4","NOTE"]]
+        header = [["FORMAT","ENCODING","OPCODE","INSTRUCTIONS","OPERAND0","OPERAND1","OPERAND2","OPERAND3","OPERAND4","MODIFIER0","MODIFIER1","MODIFIER2","MODIFIER3","MODIFIER4","NOTE"]]
         with open(csv_path, 'w', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)
             csv_writer.writerows(header)

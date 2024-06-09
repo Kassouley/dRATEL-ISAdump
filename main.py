@@ -113,7 +113,7 @@ def main() :
     # print(instruction_set.isa_pdf.get_instructions_dict())
     instruction_set.create_instructions_dict()
 
-    # instruction_set.to_csv("test37.csv")
+    instruction_set.to_csv("test37.csv")
     # instruction_set.get_isa_pdf_object().print_instructions()
     # instruction_set.create_isa_instructions_dic()
     # instruction_set.print_isa_instructions(1,100)
