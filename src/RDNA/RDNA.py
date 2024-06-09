@@ -112,21 +112,21 @@ class RDNA1(InstructionSet) :
                         }, 
                     }
 
-def set_correct_type(self, instruction, pdf_instruction_type=None) :
-        if instruction.get_type() == 'VOP3' and instruction.get_instruction() in  ["V_ADD_CO_U32", "V_SUB_CO_U32", "V_SUBREV_CO_U32", "V_DIV_SCALE_F32", "V_DIV_SCALE_F64", "V_MAD_U64_U32", "V_MAD_I64_I32"] :
-            instruction.set_type('VOP3B')
-        
-        elif re.match(r"^(.*)_E64$", instruction.get_instruction()) or instruction.get_type() == 'VOP3':
-            instruction.set_type('VOP3A')
-        
-        elif instruction.get_type() == 'DPP8' or instruction.get_type() == 'DPP16' : 
-            instruction.set_type(pdf_instruction_type+":"+instruction.get_type())
+    def set_correct_type(self, instruction, pdf_instruction_type=None) :
+            if instruction.get_type() == 'VOP3' and instruction.get_instruction() in  ["V_ADD_CO_U32", "V_SUB_CO_U32", "V_SUBREV_CO_U32", "V_DIV_SCALE_F32", "V_DIV_SCALE_F64", "V_MAD_U64_U32", "V_MAD_I64_I32"] :
+                instruction.set_type('VOP3B')
             
-        elif instruction.get_type() == 'SDWA':
-            if pdf_instruction_type == 'VOPC' :
-                instruction.set_type(pdf_instruction_type+":SDWAB")
-            else: 
-                instruction.set_type(pdf_instruction_type+":SDWA")
+            elif re.match(r"^(.*)_E64$", instruction.get_instruction()) or instruction.get_type() == 'VOP3':
+                instruction.set_type('VOP3A')
+            
+            elif instruction.get_type() == 'DPP8' or instruction.get_type() == 'DPP16' : 
+                instruction.set_type(pdf_instruction_type+":"+instruction.get_type())
+                
+            elif instruction.get_type() == 'SDWA':
+                if pdf_instruction_type == 'VOPC' :
+                    instruction.set_type(pdf_instruction_type+":SDWAB")
+                else: 
+                    instruction.set_type(pdf_instruction_type+":SDWA")
 
 class RDNA2(InstructionSet) :
     def __init__(self, isa_pdf_path):
@@ -239,21 +239,21 @@ class RDNA2(InstructionSet) :
                         }, 
                     }
 
-def set_correct_type(self, instruction, pdf_instruction_type=None) :
-        if instruction.get_type() == 'VOP3' and instruction.get_instruction() in  ["V_ADD_CO_U32", "V_SUB_CO_U32", "V_SUBREV_CO_U32", "V_DIV_SCALE_F32", "V_DIV_SCALE_F64", "V_MAD_U64_U32", "V_MAD_I64_I32"] :
-            instruction.set_type('VOP3B')
-        
-        elif re.match(r"^(.*)_E64$", instruction.get_instruction()) or instruction.get_type() == 'VOP3':
-            instruction.set_type('VOP3A')
-        
-        elif instruction.get_type() == 'DPP8' or instruction.get_type() == 'DPP16' : 
-            instruction.set_type(pdf_instruction_type+":"+instruction.get_type())
+    def set_correct_type(self, instruction, pdf_instruction_type=None) :
+            if instruction.get_type() == 'VOP3' and instruction.get_instruction() in  ["V_ADD_CO_U32", "V_SUB_CO_U32", "V_SUBREV_CO_U32", "V_DIV_SCALE_F32", "V_DIV_SCALE_F64", "V_MAD_U64_U32", "V_MAD_I64_I32"] :
+                instruction.set_type('VOP3B')
             
-        elif instruction.get_type() == 'SDWA':
-            if pdf_instruction_type == 'VOPC' :
-                instruction.set_type(pdf_instruction_type+":SDWAB")
-            else: 
-                instruction.set_type(pdf_instruction_type+":SDWA")
+            elif re.match(r"^(.*)_E64$", instruction.get_instruction()) or instruction.get_type() == 'VOP3':
+                instruction.set_type('VOP3A')
+            
+            elif instruction.get_type() == 'DPP8' or instruction.get_type() == 'DPP16' : 
+                instruction.set_type(pdf_instruction_type+":"+instruction.get_type())
+                
+            elif instruction.get_type() == 'SDWA':
+                if pdf_instruction_type == 'VOPC' :
+                    instruction.set_type(pdf_instruction_type+":SDWAB")
+                else: 
+                    instruction.set_type(pdf_instruction_type+":SDWA")
                 
 class RDNA3(InstructionSet) :
     def __init__(self, isa_pdf_path):

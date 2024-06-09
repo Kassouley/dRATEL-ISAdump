@@ -1,7 +1,7 @@
 from enum import Enum
 
 class ISA(Enum):
-    TYPE = 0
+    FORMAT = 0
     OPCODE = 1
     ENCODING = 2
     INSTRUCTIONS = 3
@@ -17,8 +17,8 @@ class ISA(Enum):
     MODIFIER4 = 13
     NOTE = 14
 
-class ISA_Soup(Enum):
-    TYPE = 0
+class ISA_SOUP(Enum):
+    FORMAT = 0
     INSTRUCTIONS = 1
     OPERAND0 = 2
     OPERAND1 = 3
@@ -35,4 +35,4 @@ class ISA_Soup(Enum):
 class ISA_Pdf(Enum):
     INSTRUCTIONS = 0
     OPCODE = 1
-    TYPE = 2
+    FORMAT = 2

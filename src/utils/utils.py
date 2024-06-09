@@ -1,9 +1,7 @@
 import requests
-import csv
 from bs4 import BeautifulSoup
 
 def get_soup_from_request_http(url) :
-    # print(f"Waiting for response of {url} . . . ")
     response = requests.get(url)
     if response.status_code == 200:
         return BeautifulSoup(response.text, 'html.parser')
@@ -75,13 +73,3 @@ def replace_substring(self, string, substring, pos1, pos2):
     else :
         return string[:-pos2-1] + substring + '.' + string[-pos1:]
     
-
-class ISAList(list):
-    def export_to_csv(self, csv_path) :
-        with open(csv_path, 'w', newline='') as csvfile:
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerows(self)
-
-    def print(self) :
-        for i in self :
-            print(i)
