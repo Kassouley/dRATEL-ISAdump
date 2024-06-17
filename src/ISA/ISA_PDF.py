@@ -78,7 +78,12 @@ class ISA_PDF :
             field_dict = {}
             for element in sub_dict['FIELD']['tab'][1:] :
                 if element[0] not in field_dict :
-                    field_dict[element[0]] = {'bits': element[1], 'desc': element[2]}
+                    numbers = list(map(int, re.findall(r'\d+', element[1])))
+                    if len(numbers) == 1:
+                        bits_size = 1
+                    else :
+                        bits_size = numbers[-2] - numbers[-1] + 1
+                    field_dict[element[0]] = {'bits': element[1], 'size': bits_size, 'desc': element[2]}
 
             last_field_bits = list(field_dict.values())[-1]['bits']
             encoding_size = int(re.search(r'\[(\d+)', last_field_bits).group(1)) + 1 if last_field_bits else 0

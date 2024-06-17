@@ -1,6 +1,6 @@
 # import sys
 from src.ISA.ISA_PDF import ISA_PDF
-# from src.ISA.ISA_Soup import ISA_Soup
+from src.ISA.ISA_Soup import ISA_Soup
 from src.CDNA.CDNA2 import CDNA2
 import csv
 #########################
@@ -106,7 +106,9 @@ def main() :
     pdf = "C:\\Users\\lucas\\Downloads\\cdna2.pdf"
 
     
-
+    # isa = ISA_Soup(url)
+    # isa.create_instruction_dict()
+    # print(isa.get_instruction_dict())
     instruction_set = CDNA2(pdf)
     # instruction_set.isa_pdf.scrape_tables_from_pdf()
     # instruction_set.isa_pdf.create_instructions_dict()

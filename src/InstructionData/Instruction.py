@@ -22,7 +22,13 @@ class Instruction:
 
     def get_format(self) -> Format:
         return self.format
-
+    
+    def get_format_name(self) -> str:
+        format_name = self.format.name
+        if self.format_suffix != None :
+            format_name = f"{format_name}:{self.format_suffix.name}"
+        return format_name
+    
     def get_format_suffix(self) -> Format:
         return self.format_suffix
 
@@ -39,7 +45,28 @@ class Instruction:
         return self.modifier_list
 
     def get_encoding_string(self) -> str:
-        return self.encoding_string
+        binary_string = self.encoding_string
+        try :
+            binary_string = binary_string.replace('ENCODING', self.format.binary_encoding)
+        except :
+            pass
+        try :
+            binary_string = binary_string.replace('OP', bin(int(self.opcode))[2:].zfill(self.format.field_dict['OP']['size']))
+        except :
+            pass
+        try :
+            binary_string = binary_string.replace('reserved', "0".zfill(self.format.field_dict['reserved']['size']))
+        except :
+            pass
+        try :
+            if self.format_suffix.name == 'SDWA' or self.format_suffix.name == 'SDWAB' :
+                binary_string = binary_string.replace('SRC0', bin(249)[2:].zfill(self.format.field_dict['SRC0']['size']),1)
+            
+            if self.format_suffix.name == 'DPP' :
+                binary_string = binary_string.replace('SRC0', bin(250)[2:].zfill(self.format.field_dict['SRC0']['size']),1)
+        except :
+            pass
+        return binary_string
 
     def get_note(self) -> str:
         return self.note

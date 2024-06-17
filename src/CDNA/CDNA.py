@@ -7,7 +7,7 @@ class CDNA(InstructionSet) :
                  isa_pdf_path: str, pdf_range_page: range, is_double_optable: bool):
             super().__init__(isa_name, isa_llvm_urls, isa_pdf_path, pdf_range_page, is_double_optable)
 
-    def set_correct_type(self, instruction: Instruction, instruction_format_str: str) :
+    def set_correct_format(self, instruction: Instruction, instruction_format_str: str) :
 
         instruction_mnemonic = instruction.get_mnemonic()
         new_format = instruction_format_str
@@ -26,7 +26,10 @@ class CDNA(InstructionSet) :
         elif instruction_mnemonic.endswith('_DPP'):
             new_suffix_format = 'DPP'
         elif instruction_mnemonic.endswith('_SDWA'):
-            new_suffix_format = 'SDWA'
+            if instruction_format_str == 'VOPC' :
+                new_suffix_format = 'SDWAB'
+            else :
+                new_suffix_format = 'SDWA'
         elif instruction_format_str == 'VOP3P' and instruction.get_opcode() != "N/A":
             new_format = 'VOP3P-MAI' if int(instruction.get_opcode()) >= 64 else 'VOP3P'
 
