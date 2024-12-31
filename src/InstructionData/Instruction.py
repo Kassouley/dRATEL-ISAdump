@@ -1,11 +1,13 @@
+from src.InstructionData.Modifier import Modifier
 from src.InstructionData.Operand import Operand
 from src.InstructionData.Format import Format
+import re
 
 class Instruction:
     def __init__(self, mnemonic: str, type: str, 
-                 operand_list: list[Operand], modifier_list: list[str], 
+                 operand_list: list[Operand], modifier_list: list[Modifier], 
                  format: Format = None, format_suffix: Format = None, 
-                 opcode: str = 'N/A', note: str = '') -> None:
+                 opcode: str = 'N/O', note: str = '') -> None:
         
         self.mnemonic: str = mnemonic
         self.format: Format = format
@@ -13,7 +15,7 @@ class Instruction:
         self.type: str = type
         self.opcode: str = opcode
         self.operand_list: list[Operand] = operand_list
-        self.modifier_list: list[str] = modifier_list
+        self.modifier_list: list[Modifier] = modifier_list
         self.note: str = note
         self.encoding_string: str = "N/A"
 
@@ -35,37 +37,31 @@ class Instruction:
     def get_type(self) -> str:
         return self.type
 
-    def get_opcode(self) -> str:
-        return self.opcode
+    def get_opcode(self) -> int | None:
+        if self.opcode != 'N/O': 
+            return int(self.opcode)
+        return None
 
     def get_operand_list(self) -> list[Operand]:
         return self.operand_list
 
-    def get_modifier_list(self) -> list[str]:
+    def get_modifier_list(self) -> list[Modifier]:
         return self.modifier_list
 
     def get_encoding_string(self) -> str:
         binary_string = self.encoding_string
-        try :
+        if hasattr(self.format, 'binary_encoding'):
             binary_string = binary_string.replace('ENCODING', self.format.binary_encoding)
-        except :
-            pass
-        try :
-            binary_string = binary_string.replace('OP', bin(int(self.opcode))[2:].zfill(self.format.field_dict['OP']['size']))
-        except :
-            pass
-        try :
+        if 'OP' in self.format.field_dict and self.opcode != 'N/O':
+            binary_string = re.sub(r'\bOP\b', bin(int(self.opcode))[2:].zfill(self.format.field_dict['OP']['size']), binary_string)
+        if 'reserved' in self.format.field_dict:
             binary_string = binary_string.replace('reserved', "0".zfill(self.format.field_dict['reserved']['size']))
-        except :
-            pass
-        try :
+        if 'SRC0' in self.format.field_dict and self.format_suffix:
             if self.format_suffix.name == 'SDWA' or self.format_suffix.name == 'SDWAB' :
                 binary_string = binary_string.replace('SRC0', bin(249)[2:].zfill(self.format.field_dict['SRC0']['size']),1)
             
             if self.format_suffix.name == 'DPP' :
                 binary_string = binary_string.replace('SRC0', bin(250)[2:].zfill(self.format.field_dict['SRC0']['size']),1)
-        except :
-            pass
         return binary_string
 
     def get_note(self) -> str:
@@ -91,7 +87,7 @@ class Instruction:
     def set_operand_list(self, operand_list: list[Operand]) -> None:
         self.operand_list = operand_list
 
-    def set_modifier_list(self, modifier_list: list[str]) -> None:
+    def set_modifier_list(self, modifier_list: list[Modifier]) -> None:
         self.modifier_list = modifier_list
 
     def set_encoding_string(self) -> None:

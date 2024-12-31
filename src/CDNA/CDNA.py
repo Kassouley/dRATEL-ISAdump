@@ -7,6 +7,14 @@ class CDNA(InstructionSet) :
                  isa_pdf_path: str, pdf_range_page: range, is_double_optable: bool):
             super().__init__(isa_name, isa_llvm_urls, isa_pdf_path, pdf_range_page, is_double_optable)
 
+    def set_correct_opcode(self, instruction: Instruction, instruction_format_str: str, instruction_former_format_str: str) :
+        if not instruction_format_str or not instruction_former_format_str:
+            return
+        if instruction_format_str == 'VOP3' and instruction_former_format_str == 'VOP1' :
+            instruction.set_opcode(instruction.get_opcode() + 0x140)
+        elif instruction_format_str == 'VOP3' and instruction_former_format_str == 'VOP2' :
+            instruction.set_opcode(instruction.get_opcode() + 0x100)
+
     def set_correct_format(self, instruction: Instruction, instruction_format_str: str) :
 
         instruction_mnemonic = instruction.get_mnemonic()
@@ -30,8 +38,8 @@ class CDNA(InstructionSet) :
                 new_suffix_format = 'SDWAB'
             else :
                 new_suffix_format = 'SDWA'
-        elif instruction_format_str == 'VOP3P' and instruction.get_opcode() != "N/A":
-            new_format = 'VOP3P-MAI' if int(instruction.get_opcode()) >= 64 else 'VOP3P'
+        elif instruction_format_str == 'VOP3P' and instruction.get_opcode():
+            new_format = 'VOP3P-MAI' if instruction.get_opcode() >= 64 else 'VOP3P'
 
         instruction.set_format(self.isa_pdf.get_format_dict().get(new_format, Format(new_format, None, None, None)))
         instruction.set_format_suffix(self.isa_pdf.get_format_dict().get(new_suffix_format, None))

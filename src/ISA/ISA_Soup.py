@@ -2,9 +2,9 @@ from src.utils.utils import *
 import sys
 from src.utils.enumeration import *
 from src.InstructionData.Operand import Operand
+from src.InstructionData.Modifier import Modifier
 import re
 import threading
-from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -17,14 +17,14 @@ TYPE_SUFFIX = [
 ]
 
 SUFFIX_AUX = ['x2', 'x4', 'x8', 'x16', 'x32']
-
-TYPE_SUFFIX += [base + suffix for base in TYPE_SUFFIX for suffix in SUFFIX_AUX] + ['fx']
+OPERAND_TYPE = TYPE_SUFFIX.copy()
+OPERAND_TYPE += [base + suffix for base in TYPE_SUFFIX for suffix in SUFFIX_AUX] + ['fx']
 
 SIZE_SUFFIX = [
-    "x2", "x3", "x4", "x8", "x16",
-    "x", "xy", "xyz", "xyzw",
+    "d16_format_x", "d16_format_xy", "d16_format_xyz", "d16_format_xyzw",
     "d16_x", "d16_xy", "d16_xyz", "d16_xyzw",
-    "d16_format_x", "d16_format_xy", "d16_format_xyz", "d16_format_xyzw"
+    "x", "xy", "xyz", "xyzw",
+    "x2", "x3", "x4", "x8", "x16"
 ]
 
 SIZE_SUFFIX_CORRESPONDING = {
@@ -97,7 +97,9 @@ class ISA_Soup:
                 instruction_wo_encoding_suffix, encoding_suffix = strip_suffix(instruction, ENCODING_SUFFIX)
                 base_str, size_suffix = strip_suffix(instruction_wo_encoding_suffix, SIZE_SUFFIX)
                 type_suffix_src = SIZE_SUFFIX_CORRESPONDING.get(size_suffix, 'b32')
-                base_str, type_suffix_src = strip_suffix(base_str, TYPE_SUFFIX) or type_suffix_src
+                base_str, type_suffix_src_tmp = strip_suffix(base_str, TYPE_SUFFIX)
+                if type_suffix_src_tmp:
+                    type_suffix_src = type_suffix_src_tmp
                 base_str, type_suffix_dst = strip_suffix(base_str, TYPE_SUFFIX)
                 if type_suffix_dst is None:
                     type_suffix_dst = type_suffix_src
@@ -105,7 +107,8 @@ class ISA_Soup:
                 return instruction, instruction_wo_encoding_suffix, type_suffix_dst, type_suffix_src, encoding_suffix
             
             def parse_modifiers(elements):
-                return elements.pop().split() if 'MODIFIERS' in header_line else []
+                mod_arr = elements.pop().split() if 'MODIFIERS' in header_line else []
+                return [Modifier(mod_name) for mod_name in mod_arr]
                 
             def parse_operands(elements, line_soup):
                 def get_operand_info(url):
@@ -147,7 +150,7 @@ class ISA_Soup:
                             operand_is_modifiable = True
                         elif attribute == 'dst':
                             operand_can_be_dst = True
-                        elif attribute in TYPE_SUFFIX:
+                        elif attribute in OPERAND_TYPE:
                             operand_type = attribute
                         else:
                             print(f"Operand attribute '{attribute}' not known for '{operand_name}'")
@@ -161,6 +164,37 @@ class ISA_Soup:
                     href_id_match = re.search(r'^(.*?)\.html', operand_href)
                     href_id = href_id_match.group(1) if href_id_match else operand_href
 
+                    operand_size = href_save_dic[operand_href]['size']
+                    match = re.search(r'\d+', operand_size)
+                    if match :
+                        operand_size = int(match.group())
+                    else:
+                        operand_size = "N/S"
+
+                    def check_type_size_dword(var_type, dword_size):
+                        if var_type == 'fx' or dword_size == 'N/S':
+                            return var_type
+                        match = re.match(r"([a-zA-Z]+\d+)(x(\d+))?", var_type)
+                        if not match:
+                            raise ValueError(f"Invalid type format '{var_type}'. Expected format like 'b16', 'f32', 'i128', 'b16x2', etc.")
+
+                        base_type = match.group(1)
+                        multiplier = int(match.group(3)) if match.group(3) else 1
+
+                        base_match = re.match(r"[a-zA-Z]+(\d+)", base_type)
+                        if not base_match:
+                            raise ValueError(f"Invalid base type format '{base_type}'. Expected format like 'b16', 'f32', 'i128', etc.")
+
+                        base_size_bits = int(base_match.group(1))
+                        total_size_bits = base_size_bits * multiplier
+                        dword_size_bits = dword_size * 32
+                        total_size_bits = ((total_size_bits + 31) // 32) * 32
+                        if total_size_bits != dword_size_bits :
+                            var_type = "b"+str(dword_size_bits)
+                        return var_type
+                    
+                    operand_type = check_type_size_dword(operand_type, operand_size)
+
                     return Operand(
                         name=operand_name,
                         type=operand_type,
@@ -170,7 +204,7 @@ class ISA_Soup:
                         can_be_dst=operand_can_be_dst,
                         href_id=href_id,
                         href_url=href_save_dic[operand_href]['url'],
-                        size=href_save_dic[operand_href]['size'],
+                        size=operand_size,
                         op=href_save_dic[operand_href]['op']
                     )
 
