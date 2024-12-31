@@ -1,11 +1,10 @@
 import threading
 import csv
-from src.ISA.ISA_Soup import ISA_Soup
-from src.ISA.ISA_PDF import ISA_PDF
-from src.InstructionData.Instruction import Instruction
-from src.utils.utils import *
-from src.utils.enumeration import *
-
+from ..ISA.ISA_Soup import ISA_Soup
+from ..ISA.ISA_PDF import ISA_PDF
+from ..InstructionData.Instruction import Instruction
+from ..utils.utils import *
+from ..utils.enumeration import *
 
 class InstructionSet :
     def __init__(self, isa_name: str, isa_llvm_urls: list[str] | str, 
@@ -242,7 +241,15 @@ class InstructionSet :
                                                     f"not in LLVM documentation ({self.isa_llvm_urls})"))   
                 self.instructions_dict[pdf_instruction_details[ISA_Pdf.FORMAT.value]].append(new_instruction)
 
-    def to_csv(self, csv_path: str) -> None:
+    def formats_to_csv(self, csv_path: str) -> None:
+        with open(csv_path, 'w', newline='') as csvfile:
+            csv_writer = csv.writer(csvfile)
+            formats = self.isa_pdf.get_format_dict()
+            for format in formats.values():
+                csv_writer.writerow(format.to_list())
+
+
+    def instructions_to_csv(self, csv_path: str) -> None:
         header = [["FORMAT","ENCODING","OPCODE","INSTRUCTIONS","TYPE","OPERAND0","OPERAND1","OPERAND2","OPERAND3","OPERAND4","MODIFIER0","MODIFIER1","MODIFIER2","MODIFIER3","MODIFIER4","MODIFIER5","MODIFIER6","MODIFIER7","NOTE"]]
         with open(csv_path, 'w', newline='') as csvfile:
             csv_writer = csv.writer(csvfile)

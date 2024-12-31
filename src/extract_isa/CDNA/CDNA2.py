@@ -1,4 +1,4 @@
-from src.CDNA.CDNA import CDNA
+from .CDNA import CDNA
 
 class CDNA2(CDNA) :
     def __init__(self, isa_pdf_path):

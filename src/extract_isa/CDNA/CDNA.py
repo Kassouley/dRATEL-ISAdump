@@ -1,6 +1,6 @@
-from src.ISA.InstructionSet import InstructionSet
-from src.InstructionData.Instruction import Instruction
-from src.InstructionData.Format import Format
+from ..ISA.InstructionSet import InstructionSet
+from ..InstructionData.Instruction import Instruction
+from ..InstructionData.Format import Format
 
 class CDNA(InstructionSet) :
     def __init__(self, isa_name: str, isa_llvm_urls: list[str] | str, 

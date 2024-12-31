@@ -1,6 +1,6 @@
-from src.InstructionData.Modifier import Modifier
-from src.InstructionData.Operand import Operand
-from src.InstructionData.Format import Format
+from ..InstructionData.Modifier import Modifier
+from ..InstructionData.Operand import Operand
+from ..InstructionData.Format import Format
 import re
 
 class Instruction:

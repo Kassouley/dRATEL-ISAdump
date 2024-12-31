@@ -1,8 +1,8 @@
 import fitz  # PyMuPDF
 import re
-from src.utils.utils import *
-from src.utils.enumeration import *
-from src.InstructionData.Format import Format
+from ..utils.utils import *
+from ..utils.enumeration import *
+from ..InstructionData.Format import Format
 
 class ISA_PDF :
     def __init__(self, isa_pdf_path: str, pdf_table_format: dict, 

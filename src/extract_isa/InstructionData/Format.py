@@ -30,6 +30,13 @@ class Format:
     def encoding_string(self) -> str:
         return self._encoding_string
     
+    def to_list(self) -> list:
+        list = [self._name, str(self._size), self._binary_encoding, self._encoding_string]
+        for k, v in self._field_dict.items():
+            list.append(k) 
+            list.append(v['bits'])
+        return list
+
     def get_attribute_list_format(self) -> list:
         field_list = [item for field_name, field_info in self._field_dict.items() for item in (field_name, field_info['bits'])]
         return [self._name, self._size, self._binary_encoding, self._encoding_string] + field_list

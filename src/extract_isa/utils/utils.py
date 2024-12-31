@@ -66,10 +66,3 @@ def frag_and_dupli(tab):
         for r in result :    
             result_tab.append(r)
     return result_tab
-
-def replace_substring(self, string, substring, pos1, pos2):
-    if pos1 == 0 :
-        return string[:-pos2-1] + substring 
-    else :
-        return string[:-pos2-1] + substring + '.' + string[-pos1:]
-    

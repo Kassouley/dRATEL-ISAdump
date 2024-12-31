@@ -1,8 +1,8 @@
-from src.utils.utils import *
+from ..utils.utils import *
+from ..utils.enumeration import *
+from ..InstructionData.Operand import Operand
+from ..InstructionData.Modifier import Modifier
 import sys
-from src.utils.enumeration import *
-from src.InstructionData.Operand import Operand
-from src.InstructionData.Modifier import Modifier
 import re
 import threading
 from concurrent.futures import ThreadPoolExecutor
