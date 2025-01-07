@@ -1,5 +1,6 @@
 import re
 import subprocess
+import sys
 
 symbols = ['i', 'p', '1', '0']
 def generate_combinations(current, length, symbols, results):
@@ -60,12 +61,13 @@ for line in result.stdout.splitlines():
         last_4_chars = hex_code[-4:]  # Last 4 hex characters
         decimal_value = int(last_4_chars, 16)  # Convert hex to decimal
         binary_equivalent = bin(decimal_value)[2:].zfill(16)  # Convert to binary and pad to 16 bits
-        spaced_binary = ' '.join([binary_equivalent[i:i+4] for i in range(0, len(binary_equivalent), 4)])
+        spaced_binary = binary_equivalent[0] + ' ' + ' '.join([binary_equivalent[i:i+5] for i in range(1, len(binary_equivalent), 5)])
 
         # Add tuple (hex_value, decimal_value, line) to list
         lines_and_hex.append((decimal_value, f"{swizzle_part:<{40}} : {last_4_chars:<{5}} : {spaced_binary:<{20}} : {decimal_value:<{10}}"))
 
-lines_and_hex.sort(key=lambda x: x[0])
+if len(sys.argv) > 1 and sys.argv[1] == '--sort':
+    lines_and_hex.sort(key=lambda x: x[0])
 
 for _, line in lines_and_hex:
     print(line)
