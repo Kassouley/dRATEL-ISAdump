@@ -43,8 +43,6 @@ if result.returncode != 0:
 
 result = subprocess.run('roc-obj -d a.out && grep -v "s_nop" a.out\:1.hipv4-amdgcn-amd-amdhsa--gfx90a.s', shell=True, text=True, capture_output=True)
 
-print(result.stdout)  # Standard output of the command
-
 if result.returncode != 0: 
     print("Command Error:")
     print(result.stderr)
