@@ -72,7 +72,7 @@ if result.returncode != 0:
     exit()
 
 pattern = r'(swizzle\(.*?\))\s*//\s*[0-9A-F]*: ([0-9A-F]{8})'
-pattern2 = r'swizzle\(BITMASK_PERM,\s*\"(.*)\"\)'
+pattern2 = r'swizzle\(BITMASK_PERM,\s*\"(.*)\"\)\s*'
 
 lines_and_hex = []
 
@@ -91,7 +91,7 @@ for line in result.stdout.splitlines():
         is_correct = "WRONG"
         match2 = re.search(pattern2, swizzle_part)
         if match2:
-            true_decoded_mask = match.group(1)
+            true_decoded_mask = match2.group(1)
             if true_decoded_mask == decoded_mask:
                 is_correct = "CORRECT"
 
