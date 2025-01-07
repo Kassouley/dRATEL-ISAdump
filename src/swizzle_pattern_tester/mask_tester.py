@@ -72,7 +72,7 @@ if result.returncode != 0:
     exit()
 
 pattern = r'(swizzle\(.*?\))\s*//\s*[0-9A-F]*: ([0-9A-F]{8})'
-pattern2 = r'swizzle\(BITMASK_PERM, (\"*?\")\)'
+pattern2 = r'swizzle\(BITMASK_PERM,\s*"(.*)"\)'
 
 lines_and_hex = []
 
@@ -89,14 +89,14 @@ for line in result.stdout.splitlines():
         spaced_binary = binary_equivalent[0] + ' ' + ' '.join(mask)
 
         is_correct = "WRONG"
-        match = re.search(pattern2, swizzle_part)
-        if match:
+        match2 = re.search(pattern2, swizzle_part)
+        if match2:
             true_decoded_mask = match.group(1)
             if true_decoded_mask == decoded_mask:
                 is_correct = "CORRECT"
 
         # Add tuple (hex_value, decimal_value, line) to list
-        lines_and_hex.append((decimal_value, f"{swizzle_part:<{40}} : {is_correct} : {decoded_mask} : {last_4_chars:<{5}} : {spaced_binary:<{20}} : {decimal_value:<{10}}"))
+        lines_and_hex.append((decimal_value, f"{swizzle_part:<{30}} : {is_correct} : {decoded_mask} : {last_4_chars:<{5}} : {spaced_binary:<{20}} : {decimal_value:<{10}}"))
 
 if len(sys.argv) > 1 and sys.argv[1] == '--sort':
     lines_and_hex.sort(key=lambda x: x[0])
