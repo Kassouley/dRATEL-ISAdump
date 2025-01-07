@@ -58,11 +58,12 @@ for line in result.stdout.splitlines():
         swizzle_part = match.group(1)
         hex_code = match.group(2)  # Hex code
         last_4_chars = hex_code[-4:]  # Last 4 hex characters
-        binary_equivalent = bin(int(last_4_chars, 16))[2:].zfill(16)  # Convert to binary and pad to 16 bits
+        decimal_value = int(last_4_chars, 16)  # Convert hex to decimal
+        binary_equivalent = bin(decimal_value)[2:].zfill(16)  # Convert to binary and pad to 16 bits
         spaced_binary = ' '.join([binary_equivalent[i:i+4] for i in range(0, len(binary_equivalent), 4)])
 
-        # Add tuple (hex_code, line) to list
-        lines_and_hex.append((int(last_4_chars, 16), f"{swizzle_part:<{40}} : {last_4_chars:<{5}} : {spaced_binary:<{20}}"))
+        # Add tuple (hex_value, decimal_value, line) to list
+        lines_and_hex.append((decimal_value, f"{swizzle_part:<{40}} : {last_4_chars:<{5}} : {spaced_binary:<{20}} : {decimal_value:<{10}}"))
 
 lines_and_hex.sort(key=lambda x: x[0])
 
