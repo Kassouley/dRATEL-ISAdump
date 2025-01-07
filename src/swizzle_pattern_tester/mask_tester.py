@@ -72,7 +72,7 @@ if result.returncode != 0:
     exit()
 
 pattern = r'(swizzle\(.*?\))\s*//\s*[0-9A-F]*: ([0-9A-F]{8})'
-pattern2 = r'swizzle\(BITMASK_PERM,\s*"(.*)"\)'
+pattern2 = r'swizzle\(BITMASK_PERM,\s*\"(.*)\"\)'
 
 lines_and_hex = []
 
