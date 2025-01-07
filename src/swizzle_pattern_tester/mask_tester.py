@@ -15,12 +15,12 @@ source = """
 int main(void) { return 0; }
 
 __global__ void ds_swizzle_b32() {
-    __asm__ volatile("
+    __asm__ volatile(" \\
 """
 
 asm_lines = []
 for combo in results:
-    asm_lines.append(f"\t\tds_swizzle_b32 v0, v0 offset:swizzle(BITMASK_PERM, \"{combo}\")")
+    asm_lines.append(f'\t\tds_swizzle_b32 v0, v0 offset:swizzle(BITMASK_PERM, \\"{combo}\\")')
 
 asm = "\\n \\\n".join(asm_lines)
 
