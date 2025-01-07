@@ -50,7 +50,7 @@ if result.returncode != 0:
     print(result.stderr)
     exit()
 
-pattern = r'(swizzle\(.*?\)) // [0-9A-F]*: ([0-9A-F]{8})'
+pattern = r'(swizzle\(.*?\))\s*//\s*[0-9A-F]*: ([0-9A-F]{8})'
 
 for line in result.stdout.splitlines():
     match = re.search(pattern, line, re.IGNORECASE)
