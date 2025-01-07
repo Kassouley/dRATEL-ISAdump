@@ -2,6 +2,28 @@ import re
 import subprocess
 import sys
 
+def decode_mask(mask):
+    
+    xor_mask, or_mask, and_mask = mask
+    decoded_mask = ""
+
+    # Decode each bit position
+    for i in range(5):
+        xor_bit = xor_mask[i]
+        or_bit = or_mask[i]
+        and_bit = and_mask[i]
+
+        if xor_bit == '1':
+            decoded_mask += 'i'  # Inverse bit
+        elif or_bit == '1':
+            decoded_mask += '1'  # Set to 1
+        elif and_bit == '1':
+            decoded_mask += 'p'  # Preserve bit
+        else:
+            decoded_mask += '0'  # Set to 0
+
+    return decoded_mask
+
 symbols = ['i', 'p', '1', '0']
 def generate_combinations(current, length, symbols, results):
     if length == 0:
@@ -61,10 +83,11 @@ for line in result.stdout.splitlines():
         last_4_chars = hex_code[-4:]  # Last 4 hex characters
         decimal_value = int(last_4_chars, 16)  # Convert hex to decimal
         binary_equivalent = bin(decimal_value)[2:].zfill(16)  # Convert to binary and pad to 16 bits
-        spaced_binary = binary_equivalent[0] + ' ' + ' '.join([binary_equivalent[i:i+5] for i in range(1, len(binary_equivalent), 5)])
+        mask = [binary_equivalent[i:i+5] for i in range(1, len(binary_equivalent), 5)]
+        spaced_binary = binary_equivalent[0] + ' ' + ' '.join(mask)
 
         # Add tuple (hex_value, decimal_value, line) to list
-        lines_and_hex.append((decimal_value, f"{swizzle_part:<{40}} : {last_4_chars:<{5}} : {spaced_binary:<{20}} : {decimal_value:<{10}}"))
+        lines_and_hex.append((decimal_value, f"{swizzle_part:<{40}} : {decode_mask(mask)} : {last_4_chars:<{5}} : {spaced_binary:<{20}} : {decimal_value:<{10}}"))
 
 if len(sys.argv) > 1 and sys.argv[1] == '--sort':
     lines_and_hex.sort(key=lambda x: x[0])
