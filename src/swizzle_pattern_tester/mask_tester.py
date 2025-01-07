@@ -72,6 +72,7 @@ if result.returncode != 0:
     exit()
 
 pattern = r'(swizzle\(.*?\))\s*//\s*[0-9A-F]*: ([0-9A-F]{8})'
+pattern2 = r'swizzle\(BITMASK_PERM, (\"*?\")\)'
 
 lines_and_hex = []
 
@@ -84,10 +85,18 @@ for line in result.stdout.splitlines():
         decimal_value = int(last_4_chars, 16)  # Convert hex to decimal
         binary_equivalent = bin(decimal_value)[2:].zfill(16)  # Convert to binary and pad to 16 bits
         mask = [binary_equivalent[i:i+5] for i in range(1, len(binary_equivalent), 5)]
+        decoded_mask = decode_mask(mask)
         spaced_binary = binary_equivalent[0] + ' ' + ' '.join(mask)
 
+        is_correct = "WRONG"
+        match = re.search(pattern2, swizzle_part)
+        if match:
+            true_decoded_mask = match.group(1)
+            if true_decoded_mask == decoded_mask:
+                is_correct = "CORRECT"
+
         # Add tuple (hex_value, decimal_value, line) to list
-        lines_and_hex.append((decimal_value, f"{swizzle_part:<{40}} : {decode_mask(mask)} : {last_4_chars:<{5}} : {spaced_binary:<{20}} : {decimal_value:<{10}}"))
+        lines_and_hex.append((decimal_value, f"{swizzle_part:<{40}} : {is_correct} : {decoded_mask} : {last_4_chars:<{5}} : {spaced_binary:<{20}} : {decimal_value:<{10}}"))
 
 if len(sys.argv) > 1 and sys.argv[1] == '--sort':
     lines_and_hex.sort(key=lambda x: x[0])
