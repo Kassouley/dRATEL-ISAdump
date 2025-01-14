@@ -1,8 +1,6 @@
 import fitz  # PyMuPDF
-import re
 from ..utils.utils import *
 from ..utils.enumeration import *
-from ..InstructionData.Format import Format
 
 class ISA_PDF :
     def __init__(self, isa_pdf_path: str, pdf_table_format: dict, 
@@ -13,7 +11,8 @@ class ISA_PDF :
         self._scraped_data = pdf_table_format
         self.instructions_dict = None
         self.format_dict = None
-        self._data_scraped = False
+        self.scrape_tables_from_pdf()
+        self.create_instructions_dict()
 
     @property
     def isa_pdf_path(self) -> str:
@@ -26,22 +25,14 @@ class ISA_PDF :
     @property
     def is_double_optable(self) -> bool:
         return self._is_double_optable
-
-    @property
-    def scraped_data(self) -> dict:
-        if not self._data_scraped:
-            raise AttributeError("Scrape data before accessing scraped_data")
-        return self._scraped_data   
+    
+    def get_scraped_data(self) -> dict :
+        return self._scraped_data
 
     def get_instructions_dict(self) -> dict :
         if self.instructions_dict == None:
             raise AttributeError("Create instruction dic before getting it")
         return self.instructions_dict
-    
-    def get_format_dict(self) -> dict :
-        if self.format_dict == None:
-            raise AttributeError("Create format dic before getting it")
-        return self.format_dict
    
     def scrape_tables_from_pdf(self) -> None :
         print("Scraping PDF . . . ")
@@ -62,7 +53,6 @@ class ISA_PDF :
                     else:
                         dic2['tab'].extend(frag_and_dupli(t))
                 del tables[:num_tables]
-        self._data_scraped = True
         print("Done.")
 
     def create_instructions_dict(self) -> None:
@@ -70,32 +60,3 @@ class ISA_PDF :
             for instructions in self._scraped_data.values()
             if 'INST' in instructions
             for instruction in instructions['INST']['tab'][1:]}
-
-    def create_format_dict(self) -> None:
-        self.format_dict = {}
-        
-        for format_key, sub_dict in self._scraped_data.items():
-            field_dict = {}
-            for element in sub_dict['FIELD']['tab'][1:] :
-                if element[0] not in field_dict :
-                    numbers = list(map(int, re.findall(r'\d+', element[1])))
-                    if len(numbers) == 1:
-                        bits_size = 1
-                    else :
-                        bits_size = numbers[-2] - numbers[-1] + 1
-                    field_dict[element[0]] = {'bits': element[1], 'size': bits_size, 'desc': element[2]}
-
-            last_field_bits = list(field_dict.values())[-1]['bits']
-            encoding_size = int(re.search(r'\[(\d+)', last_field_bits).group(1)) + 1 if last_field_bits else 0
-            
-            encoding_bits = "".join(re.findall(r'[01]+', field_dict.get('ENCODING', {}).get('desc', '')))
-            
-            format_obj = Format(
-                name=format_key,
-                binary_encoding=encoding_bits,
-                field_dict=field_dict,
-                size=encoding_size
-            )
-            
-            self.format_dict[format_key] = format_obj
-        
