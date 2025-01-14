@@ -41,5 +41,5 @@ class CDNA(InstructionSet) :
         elif instruction_format_str == 'VOP3P' and instruction.get_opcode():
             new_format = 'VOP3P-MAI' if instruction.get_opcode() >= 64 else 'VOP3P'
 
-        instruction.set_format(self.isa_pdf.get_format_dict().get(new_format, Format(new_format, None, None, None)))
-        instruction.set_format_suffix(self.isa_pdf.get_format_dict().get(new_suffix_format, None))
+        instruction.set_format(self.format_dict.get(new_format, Format(new_format, None, None, None)))
+        instruction.set_format_suffix(self.format_dict.get(new_suffix_format, None))

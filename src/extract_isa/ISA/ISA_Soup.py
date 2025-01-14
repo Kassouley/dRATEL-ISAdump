@@ -42,6 +42,8 @@ class ISA_Soup:
         self.instruction_dict = {}
         self.instruction_formats_list = []
         self.llvm_soups_list = [get_soup_from_request_http(url) for url in self.isa_llvm_urls]
+        self.scrape_instruction_formats_list()
+        self.scrape_instruction_dict()
 
     def get_instruction_dict(self):
         return self.instruction_dict
@@ -169,10 +171,10 @@ class ISA_Soup:
                     if match :
                         operand_size = int(match.group())
                     else:
-                        operand_size = "N/S"
+                        operand_size = 1
 
                     def check_type_size_dword(var_type, dword_size):
-                        if var_type == 'fx' or dword_size == 'N/S':
+                        if var_type == 'fx':
                             return var_type
                         match = re.match(r"([a-zA-Z]+\d+)(x(\d+))?", var_type)
                         if not match:
@@ -260,6 +262,3 @@ class ISA_Soup:
             scrape_instruction_dict_by_soup(llvm_soup)
         print("Done.")
 
-    def create_instruction_dict(self):
-        self.scrape_instruction_formats_list()
-        self.scrape_instruction_dict()

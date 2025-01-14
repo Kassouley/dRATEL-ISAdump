@@ -24,6 +24,19 @@ def merge_dics_of_dics(dic1, dic2) :
     return merged_dic
 
 
+def rename_key_preserve_order(d, old_key, new_key):
+    if old_key not in d:
+        return d 
+    
+    new_dict = {}
+    for key, value in d.items():
+        if key == old_key:
+            new_dict[new_key] = value 
+        else:
+            new_dict[key] = value 
+    return new_dict
+
+
 def merge_dicts(dict1, dict2):
     merged_dict = {}
     for key, value in dict1.items():
