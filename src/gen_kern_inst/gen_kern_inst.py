@@ -52,11 +52,12 @@ def get_data(row):
             param_decl = None
             op_reg = None
         elif op_type == "b0" or op['reg'] == "VCC":
-            op_arg = "off"
             param_decl = None
             op_reg = None
             if op['reg'] == "VCC":
                 op_arg = "vcc"
+            else :
+                op_arg = "off"
         elif op_name == "hwreg":
             op_arg = "hwreg(1, 2, 4)"
             param_decl = None
