@@ -1,6 +1,7 @@
 from ..ISA.InstructionSet import InstructionSet
 from ..InstructionData.Instruction import Instruction
 from ..InstructionData.Format import Format
+import copy
 
 class CDNA(InstructionSet) :
     def __init__(self, isa_name: str, isa_llvm_urls: list[str] | str, 
@@ -29,6 +30,16 @@ class CDNA(InstructionSet) :
 
         if instruction_format_str == 'VOP3' and instruction_mnemonic in vop3b_instructions:
             new_format ='VOP3B'
+        elif instruction_mnemonic.startswith('GLOBAL') and instruction_format_str == 'FLAT':
+            format = copy.deepcopy(self.format_dict.get('FLAT', None))
+            format.set_name('GLOBAL')
+            instruction.set_format(format)
+            return
+        elif instruction_mnemonic.startswith('SCRATCH') and instruction_format_str == 'FLAT':
+            format = copy.deepcopy(self.format_dict.get('FLAT', None))
+            format.set_name('SCRATCH')
+            instruction.set_format(format)
+            return
         elif instruction_mnemonic.endswith('_E64') or instruction_format_str == 'VOP3':
             new_format = 'VOP3A'
         elif instruction_mnemonic.endswith('_DPP'):

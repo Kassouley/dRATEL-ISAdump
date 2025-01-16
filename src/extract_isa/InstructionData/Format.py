@@ -11,10 +11,6 @@ class Format:
             self._encoding_string = self._create_encoding_string()
 
     @property
-    def name(self) -> str:
-        return self._name
-
-    @property
     def binary_encoding(self) -> str:
         return self._binary_encoding
 
@@ -30,6 +26,13 @@ class Format:
     def encoding_string(self) -> str:
         return self._encoding_string
     
+    def set_name(self, name):
+        self._name = name
+        
+    def get_name(self) -> str:
+        return self._name
+
+
     def to_list(self) -> list:
         list = [self._name, str(self._size), self._binary_encoding, self._encoding_string]
         for k, v in self._field_dict.items():

@@ -2,6 +2,8 @@ import fitz  # PyMuPDF
 from ..utils.utils import *
 from ..utils.enumeration import *
 
+ENCODING_SUFFIX = ['e32', 'e64', 'dpp', 'sdwa', 'e64_dpp']
+
 class ISA_PDF :
     def __init__(self, isa_pdf_path: str, pdf_table_format: dict, 
                  pages_range: range, is_double_optable: bool) -> None:
@@ -10,6 +12,7 @@ class ISA_PDF :
         self._is_double_optable = is_double_optable
         self._scraped_data = pdf_table_format
         self.instructions_dict = None
+        self.matched_instructions_dict = {}
         self.format_dict = None
         self.scrape_tables_from_pdf()
         self.create_instructions_dict()
@@ -33,7 +36,21 @@ class ISA_PDF :
         if self.instructions_dict == None:
             raise AttributeError("Create instruction dic before getting it")
         return self.instructions_dict
+    
+    def get_data_for(self, instruction_name: str):
+        instruction_name_upper = instruction_name.upper()
+        data = self.instructions_dict.get(instruction_name_upper)
+        self.matched_instructions_dict[instruction_name_upper] = data
+        return data
    
+    def get_unmatched_instructions_dict(self):
+        unmatched = {
+            key: value
+            for key, value in self.instructions_dict.items()
+            if key not in self.matched_instructions_dict
+        }
+        return unmatched
+
     def scrape_tables_from_pdf(self) -> None :
         print("Scraping PDF . . . ")
         document = fitz.open(self.isa_pdf_path)
@@ -55,6 +72,10 @@ class ISA_PDF :
                 del tables[:num_tables]
         print("Done.")
 
+
+    #   Create a dict where :
+    #       key = instruction_mnemonic
+    #       value = list("instruction_mnemonic", "opcode", "format")
     def create_instructions_dict(self) -> None:
         self.instructions_dict = {instruction[ISA_Pdf.INSTRUCTIONS.value].upper(): instruction 
             for instructions in self._scraped_data.values()

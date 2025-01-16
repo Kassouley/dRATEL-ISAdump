@@ -26,9 +26,9 @@ class Instruction:
         return self.format
     
     def get_format_name(self) -> str:
-        format_name = self.format.name
+        format_name = self.format.get_name()
         if self.format_suffix != None :
-            format_name = f"{format_name}:{self.format_suffix.name}"
+            format_name = f"{format_name}:{self.format_suffix.get_name()}"
         return format_name
     
     def get_format_suffix(self) -> Format:
@@ -57,10 +57,10 @@ class Instruction:
         if 'reserved' in self.format.field_dict:
             binary_string = binary_string.replace('reserved', "0".zfill(self.format.field_dict['reserved']['size']))
         if 'SRC0' in self.format.field_dict and self.format_suffix:
-            if self.format_suffix.name == 'SDWA' or self.format_suffix.name == 'SDWAB' :
+            if self.format_suffix.get_name() == 'SDWA' or self.format_suffix.get_name() == 'SDWAB' :
                 binary_string = binary_string.replace('SRC0', bin(249)[2:].zfill(self.format.field_dict['SRC0']['size']),1)
             
-            if self.format_suffix.name == 'DPP' :
+            if self.format_suffix.get_name() == 'DPP' :
                 binary_string = binary_string.replace('SRC0', bin(250)[2:].zfill(self.format.field_dict['SRC0']['size']),1)
         return binary_string
 
