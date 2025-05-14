@@ -229,15 +229,16 @@ class CDNA2(CDNA) :
                 field_name = "VADDR"
         elif format_name == "SOP1" and field_name == "SSRC0":
             field_name = "SSRC"
-        elif format_name == "VOP3P" :
-            if field_name == "NEG":
-                field_name = "NEG_LO"
-            elif field_name == "ACC" :
+        elif format_name == "VOP3P-MAI" :
+            if field_name == "ACC" :
                 field_dict["ACC0"] = {'bits': '[59]', 'size': 1, 'desc': field_data[2]}
                 field_dict["ACC1"] = {'bits': '[60]', 'size': 1, 'desc': field_data[2]}
                 field_name = None
             elif field_name == "ACC_CD":
                 field_name = "ACC2"
+        elif format_name == "VOP3P" :
+            if field_name == "NEG":
+                field_name = "NEG_LO"
             
         return field_name
 
